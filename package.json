@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "fluent-ffmpeg": "^2.1.0",
+    "lodash": "^4.17.2",
     "redis": "^2.6.3"
   }
 }
