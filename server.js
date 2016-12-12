@@ -34,9 +34,13 @@ function convert(filename) {
         `${OUTPUT_DIR}/${newFilename}`
     ]);
 
+    ffmpeg.on('data', (code) => {
+	console.log(code);
+    });
+
     ffmpeg.on('close', (code) => {
         console.log(`child process exited with code ${code}`);
-        if (code === 0) {
+        if (code !== 1) {
             redisClient.publish('videofragment', `${newFilename}`);
             fs.createReadStream(`${OUTPUT_DIR}/${newFilename}`)
                 .pipe(fs.createWriteStream(`${OUTPUT_DIR}/current.mp4`));
@@ -44,8 +48,14 @@ function convert(filename) {
     });
 }
 
+var fns = {};
+
 fs.watch(INPUT_DIR, {}, (eventType, filename) => {
     if (filename.indexOf('.ts') > -1) {
-        _.debounce(convert(filename), 1500);
+	if (!fns.hasOwnProperty(filename)) {
+		fns[filename] = _.debounce(convert, 1500);
+	} else {
+		fns[filename](filename);
+	}
     }
 });
